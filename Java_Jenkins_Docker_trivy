@@ -1,0 +1,37 @@
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y openjdk-11-jdk
+
+# Add Jenkins repository and install Jenkins
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo apt-get update
+sudo apt-get install -y jenkins
+
+# Start Jenkins service
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+
+# Install Docker
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common gnupg-agent
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+# Add current user to the docker group to run Docker commands without sudo
+sudo usermod -aG docker $USER
+
+# Allow Jenkins user to run Docker commands
+sudo usermod -aG docker jenkins
+
+# Install Trivy
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install -y trivy
+
+# Print initial Jenkins admin password
+echo "Wait a minute and then use the following command to get the initial Jenkins admin password:"
+echo "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
